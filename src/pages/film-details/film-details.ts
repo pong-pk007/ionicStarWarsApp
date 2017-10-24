@@ -1,5 +1,7 @@
+import { FavoriteProvider } from './../../providers/favorite/favorite';
 import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
+import { EmailComposer } from '@ionic-native/email-composer';
 
 /**
  * Generated class for the FilmDetailsPage page.
@@ -14,12 +16,36 @@ import { IonicPage, NavController, NavParams } from 'ionic-angular';
   templateUrl: 'film-details.html',
 })
 export class FilmDetailsPage {
-    filmId = null;
-  constructor(public navCtrl: NavController, public navParams: NavParams) {
-    this.filmId = this.navParams.get('filmId');
+  film: any;
+  isFavorite = false;
+
+  constructor(public navCtrl: NavController, public favoriteProvider: FavoriteProvider, public navParams: NavParams, private emailComposer: EmailComposer) {
+    this.film = this.navParams.get('film');
+    this.favoriteProvider.isFavorite(this.film.episode_id).then(isFav => {
+      this.isFavorite = isFav;
+    })
   }
-  goBack(){
-    this.navCtrl.pop();
+
+  favoriteFilm() {
+    this.favoriteProvider.favoriteFilm(this.film.episode_id).then(() => {
+      this.isFavorite = true;
+    });
+  }
+ 
+  unfavoriteFilm() {
+    this.favoriteProvider.unfavoriteFilm(this.film.episode_id).then(() => {
+      this.isFavorite = false;
+    });
+  }
+
+  shareFilm() {
+    let email = {
+      to: 'pongsathonsomjai@gmail.com',
+      subject: 'I love this one: ' + this.film.title,
+      body: 'Can you remember the opening?<br><br>\"' + this.film.opening_crawl + '\"',
+      isHtml: true
+    }
+    this.emailComposer.open(email);
   }
 
   ionViewDidLoad() {
